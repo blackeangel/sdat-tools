@@ -89,6 +89,7 @@ impl Cmd {
             ProcessError::Write(e) => Error::Io(output_path.clone(), e),
             ProcessError::TransferListRead(tlist::ReadError::Io(e)) => Error::Io(tlist_path, e),
             ProcessError::TransferListRead(e) => Error::TransferList(tlist_path, e),
+            ProcessError::TransferListWrite(_) => unreachable!(),
         })?;
 
         let (f, ..) = output_writer.into_parts();

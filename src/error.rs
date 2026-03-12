@@ -22,6 +22,8 @@ pub enum ProcessError {
     Write(io::Error),
     #[error(transparent)]
     TransferListRead(#[from] tlist::ReadError),
+    #[error(transparent)]
+    TransferListWrite(#[from] tlist::WriteError),
 }
 
 pub fn check_file_alignment(filepath: &Path, block_size: u32) -> Result<u64, Error> {
