@@ -4,7 +4,15 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+brotlic = "0.8.2"
 thiserror = "2.0.18"
+clap = { version = "4.5.60", default-features = false, features = [
+  "std",
+  "help",
+  "usage",
+  "error-context",
+  "derive",
+] }
 
 [profile.release]
 strip = true
