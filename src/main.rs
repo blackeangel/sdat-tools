@@ -1,5 +1,8 @@
+use std::env::args_os;
+use std::path::PathBuf;
+use std::process::ExitCode;
+
 use clap::{Parser, Subcommand};
-use std::{env::args_os, path::PathBuf, process::ExitCode};
 
 mod error;
 mod img2sdat;

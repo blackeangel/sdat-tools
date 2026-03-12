@@ -256,8 +256,9 @@ fn check_range(start: u32, end: u32) -> Result<(), RangeError> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::io::Cursor;
+
+    use super::*;
 
     #[test]
     fn parse_range_set_ok() {

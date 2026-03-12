@@ -1,6 +1,10 @@
-use crate::error::Error;
+use std::env::args_os;
+use std::fs::hard_link;
+use std::path::PathBuf;
+
 use clap::Args;
-use std::{env::args_os, fs::hard_link, path::PathBuf};
+
+use crate::error::Error;
 
 /// Install hardlinks to bundled commands
 #[derive(Args, Debug)]

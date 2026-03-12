@@ -1,10 +1,12 @@
-use crate::error::{Error, ProcessError, check_file_alignment, file_prefix};
-use crate::tlist::{self, Writer as ListWriter};
-use brotlic::{BrotliEncoderOptions, CompressorWriter, Quality};
-use clap::Args;
 use std::fs::File;
 use std::io::{BufReader, BufWriter, Read, Write};
 use std::path::{Path, PathBuf};
+
+use brotlic::{BrotliEncoderOptions, CompressorWriter, Quality};
+use clap::Args;
+
+use crate::error::{Error, ProcessError, check_file_alignment, file_prefix};
+use crate::tlist::{self, Writer as ListWriter};
 
 /// Convert raw image file to .new.dat or .new.dat.br
 #[derive(Args, Debug)]
@@ -194,8 +196,9 @@ fn img2sdat(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::io::Cursor;
+
+    use super::*;
 
     const BLOCK_SIZE: u32 = 4;
 
