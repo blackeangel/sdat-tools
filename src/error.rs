@@ -12,6 +12,8 @@ pub enum Error {
     Alignment(PathBuf, u32),
     #[error("{0}:{1}")]
     TransferList(PathBuf, #[source] tlist::ReadError),
+    #[error("could not determine executable path")]
+    Executable,
 }
 
 #[derive(Debug, Error)]
