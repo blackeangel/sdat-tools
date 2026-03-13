@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0] - 2026-03-13
+
+### 🚀 Features
+
+- *(install)* Add -f/--force option
+
+### 🐛 Bug Fixes
+
+- *(install)* Preserve executable extension in hardlinks
+
+### 📚 Documentation
+
+- *(readme)* Update usage of install command
+
 ## [0.1.0] - 2026-03-12
 
 ### 🚀 Features
