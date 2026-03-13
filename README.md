@@ -49,13 +49,14 @@ Options:
 ```
 Install hardlinks to bundled commands
 
-Usage: sdat-tools install <DIR>
+Usage: sdat-tools install [OPTIONS] <DIR>
 
 Arguments:
   <DIR>  Directory to install hardlinks into
 
 Options:
-  -h, --help  Print help
+  -f, --force  Force overwrite existing hardlinks
+  -h, --help   Print help
 ```
 
 ## Installation
