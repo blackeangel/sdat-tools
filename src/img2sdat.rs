@@ -14,6 +14,7 @@ pub struct Cmd {
     /// Input raw image file
     file: PathBuf,
     /// Directory for output files [default: <FILE directory>]
+    #[arg(short, long, value_name = "PATH")]
     output: Option<PathBuf>,
     /// Read/write buffer size in KiB
     #[arg(long, value_name = "N", default_value_t = 256)]

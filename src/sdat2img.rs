@@ -14,8 +14,10 @@ pub struct Cmd {
     /// Input .new.dat(.br) file
     file: PathBuf,
     /// Transfer list file [default: <FILE stem>.transfer.list]
+    #[arg(short, long, value_name = "PATH")]
     transfer_list: Option<PathBuf>,
     /// Output raw image file [default: <FILE stem>.img]
+    #[arg(short, long, value_name = "PATH")]
     output: Option<PathBuf>,
     /// Read/write buffer size in KiB
     #[arg(long, value_name = "N", default_value_t = 256)]
