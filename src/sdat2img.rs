@@ -7,6 +7,7 @@ use clap::Args;
 
 use crate::error::{Error, ProcessError, check_file_alignment, file_prefix};
 use crate::tlist::{self, Reader as ListReader};
+use crate::ui::progress_bar;
 
 /// Convert .new.dat or .new.dat.br file to a raw image
 #[derive(Args, Debug)]
@@ -37,9 +38,14 @@ impl Cmd {
     pub fn run(&mut self) -> Result<(), Error> {
         let use_brotli = self.brotli || self.file.extension().is_some_and(|e| e == "br");
 
-        if !use_brotli {
-            check_file_alignment(&self.file, self.block_size)?;
-        }
+        let input_len = if use_brotli {
+            self.file
+                .metadata()
+                .map_err(|e| Error::Io(self.file.clone(), e))?
+                .len()
+        } else {
+            check_file_alignment(&self.file, self.block_size)?
+        };
 
         let tlist_path = match self.transfer_list.take() {
             Some(path) => path,
@@ -56,7 +62,7 @@ impl Cmd {
             ListReader::new(reader).map_err(|e| Error::TransferList(tlist_path.clone(), e))
         }?;
 
-        let mut input_reader = {
+        let input_reader = {
             let f = File::open(&self.file).map_err(|e| Error::Io(self.file.clone(), e))?;
             BufReader::with_capacity(self.buffer_size * 1024, f)
         };
@@ -70,6 +76,9 @@ impl Cmd {
             let f = func(&output_path).map_err(|e| Error::Io(output_path.clone(), e))?;
             BufWriter::with_capacity(self.buffer_size * 1024, f)
         };
+
+        let progress_bar = progress_bar(input_len);
+        let mut input_reader = progress_bar.wrap_read(input_reader);
 
         let result = if use_brotli {
             let mut input_reader = DecompressorReader::new(input_reader);
@@ -87,6 +96,8 @@ impl Cmd {
                 self.block_size,
             )
         };
+
+        progress_bar.finish_and_clear();
 
         let max_offset = result.map_err(|e| match e {
             ProcessError::Read(e) => Error::Io(self.file.clone(), e),

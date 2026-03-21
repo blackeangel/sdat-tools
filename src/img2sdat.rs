@@ -7,6 +7,7 @@ use clap::Args;
 
 use crate::error::{Error, ProcessError, check_file_alignment, file_prefix};
 use crate::tlist::{self, Writer as ListWriter};
+use crate::ui::progress_bar;
 
 /// Convert raw image file to .new.dat or .new.dat.br
 #[derive(Args, Debug)]
@@ -51,7 +52,7 @@ impl Cmd {
 
         let (dat_path, tlist_path, patch_path) = self.output_paths()?;
 
-        let mut input_reader = {
+        let input_reader = {
             let f = File::open(&self.file).map_err(|e| Error::Io(self.file.clone(), e))?;
             BufReader::with_capacity(self.buffer_size * 1024, f)
         };
@@ -87,6 +88,9 @@ impl Cmd {
             ListWriter::new(w)
         };
 
+        let progress_bar = progress_bar(input_len);
+        let mut input_reader = progress_bar.wrap_read(input_reader);
+
         let result = if let Some(level) = self.brotli {
             let level = BrotliEncoderOptions::new()
                 .quality(Quality::new(level).unwrap())
@@ -107,6 +111,8 @@ impl Cmd {
                 self.block_size,
             )
         };
+
+        progress_bar.finish_and_clear();
 
         result.map_err(|e| match e {
             ProcessError::Read(e) => Error::Io(self.file.clone(), e),

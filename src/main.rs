@@ -9,6 +9,7 @@ mod img2sdat;
 mod install;
 mod sdat2img;
 mod tlist;
+mod ui;
 
 /// Android block-based OTA tools
 #[derive(Parser, Debug)]
