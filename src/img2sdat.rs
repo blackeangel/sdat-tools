@@ -30,8 +30,9 @@ pub struct Cmd {
     #[arg(require_equals = false, value_parser = clap::value_parser!(u8).range(0..=11))]
     brotli: Option<u8>,
     /// Transfer list format version
-    #[arg(short, long, default_value_t = 4, value_parser = clap::value_parser!(u8).range(1..=4))]
-    version: u8,
+    #[arg(long, value_name = "FMT", default_value_t = 4)]
+    #[arg(value_parser = clap::value_parser!(u8).range(1..=4))]
+    format: u8,
 }
 
 impl Cmd {
@@ -66,7 +67,7 @@ impl Cmd {
                 .expect("block count overflows u32");
 
             let header = tlist::Header {
-                version: self.version,
+                version: self.format,
                 total_blocks,
                 stash_entries: 0,
                 max_stash_blocks: 0,
