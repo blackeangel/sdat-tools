@@ -19,18 +19,18 @@ pub struct Cmd {
     /// Output raw image file [default: <FILE stem>.img]
     #[arg(short, long, value_name = "PATH")]
     output: Option<PathBuf>,
-    /// Read/write buffer size in KiB
-    #[arg(long, value_name = "N", default_value_t = 256)]
-    buffer_size: usize,
-    /// Block size in bytes
-    #[arg(long, value_name = "N", default_value_t = 4096)]
-    block_size: u32,
-    /// Force overwrite output file
-    #[arg(short, long)]
-    force: bool,
     /// Enable brotli decompression [default: auto-detect from FILE extension]
     #[arg(short, long)]
     brotli: bool,
+    /// Force overwrite output file
+    #[arg(short, long)]
+    force: bool,
+    /// Block size in bytes
+    #[arg(long, value_name = "N", default_value_t = 4096)]
+    block_size: u32,
+    /// Read/write buffer size in KiB
+    #[arg(long, value_name = "N", default_value_t = 256)]
+    buffer_size: usize,
 }
 
 impl Cmd {

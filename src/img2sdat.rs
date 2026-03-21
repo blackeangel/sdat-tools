@@ -16,15 +16,6 @@ pub struct Cmd {
     /// Directory for output files [default: <FILE directory>]
     #[arg(short, long, value_name = "PATH")]
     output: Option<PathBuf>,
-    /// Read/write buffer size in KiB
-    #[arg(long, value_name = "N", default_value_t = 256)]
-    buffer_size: usize,
-    /// Block size in bytes
-    #[arg(long, value_name = "N", default_value_t = 4096)]
-    block_size: u32,
-    /// Force overwrite output files
-    #[arg(short, long)]
-    force: bool,
     /// Enable brotli compression at specified level [default: 5]
     #[arg(
         short,
@@ -35,6 +26,9 @@ pub struct Cmd {
         require_equals = false, value_parser = clap::value_parser!(u8).range(0..=11),
     )]
     brotli: Option<u8>,
+    /// Force overwrite output files
+    #[arg(short, long)]
+    force: bool,
     /// Transfer list format version
     #[arg(
         long,
@@ -43,6 +37,12 @@ pub struct Cmd {
         value_parser = clap::value_parser!(u8).range(1..=4),
     )]
     format: u8,
+    /// Block size in bytes
+    #[arg(long, value_name = "N", default_value_t = 4096)]
+    block_size: u32,
+    /// Read/write buffer size in KiB
+    #[arg(long, value_name = "N", default_value_t = 256)]
+    buffer_size: usize,
 }
 
 impl Cmd {
