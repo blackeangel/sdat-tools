@@ -26,12 +26,22 @@ pub struct Cmd {
     #[arg(short, long)]
     force: bool,
     /// Enable brotli compression at specified level [default: 5]
-    #[arg(short, long, value_name = "LEVEL", default_missing_value = "5", num_args = 0..=1)]
-    #[arg(require_equals = false, value_parser = clap::value_parser!(u8).range(0..=11))]
+    #[arg(
+        short,
+        long,
+        value_name = "LEVEL",
+        default_missing_value = "5",
+        num_args = 0..=1,
+        require_equals = false, value_parser = clap::value_parser!(u8).range(0..=11),
+    )]
     brotli: Option<u8>,
     /// Transfer list format version
-    #[arg(long, value_name = "FMT", default_value_t = 4)]
-    #[arg(value_parser = clap::value_parser!(u8).range(1..=4))]
+    #[arg(
+        long,
+        value_name = "FMT",
+        default_value_t = 4,
+        value_parser = clap::value_parser!(u8).range(1..=4),
+    )]
     format: u8,
 }
 
