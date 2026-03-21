@@ -34,7 +34,8 @@ impl Cmd {
                     Err(e) => return Err(Error::Io(target, e)),
                 }
             }
-            hard_link(&prog, &target).map_err(|e| Error::Io(target, e))?;
+            hard_link(&prog, &target).map_err(|e| Error::Io(target.clone(), e))?;
+            eprintln!("created: {}", target.display());
         }
 
         Ok(())
