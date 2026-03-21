@@ -213,6 +213,7 @@ mod tests {
     use super::*;
 
     const BLOCK_SIZE: u32 = 4;
+    const BLOCK_USIZE: usize = BLOCK_SIZE as usize;
 
     fn run(input: Vec<u8>) -> (Vec<u8>, String) {
         let mut input = Cursor::new(input);
@@ -227,7 +228,7 @@ mod tests {
 
     #[test]
     fn basic() {
-        let input = vec![1u8; BLOCK_SIZE as usize * 2];
+        let input = vec![1u8; BLOCK_USIZE * 2];
         let (dat, tlist) = run(input.clone());
         assert_eq!(dat, input);
         assert_eq!(tlist, "new 2,0,2\n");
@@ -235,7 +236,7 @@ mod tests {
 
     #[test]
     fn zero_blocks() {
-        let input = vec![0u8; BLOCK_SIZE as usize * 2];
+        let input = vec![0u8; BLOCK_USIZE * 2];
         let (dat, tlist) = run(input);
         assert!(dat.is_empty());
         assert_eq!(tlist, "zero 2,0,2\n");
@@ -243,15 +244,15 @@ mod tests {
 
     #[test]
     fn mixed() {
-        let mut input = vec![1u8; BLOCK_SIZE as usize];
-        input.extend(vec![0u8; BLOCK_SIZE as usize]);
-        input.extend(vec![1u8; BLOCK_SIZE as usize]);
+        let mut input = vec![1u8; BLOCK_USIZE];
+        input.extend(vec![0u8; BLOCK_USIZE]);
+        input.extend(vec![1u8; BLOCK_USIZE]);
         let (dat, tlist) = run(input.clone());
-        assert_eq!(dat.len(), BLOCK_SIZE as usize * 2);
-        assert_eq!(dat[0..BLOCK_SIZE as usize], input[0..BLOCK_SIZE as usize]);
+        assert_eq!(dat.len(), BLOCK_USIZE * 2);
+        assert_eq!(dat[0..BLOCK_USIZE], input[0..BLOCK_USIZE]);
         assert_eq!(
-            dat[BLOCK_SIZE as usize..BLOCK_SIZE as usize * 2],
-            input[BLOCK_SIZE as usize * 2..BLOCK_SIZE as usize * 3]
+            dat[BLOCK_USIZE..BLOCK_USIZE * 2],
+            input[BLOCK_USIZE * 2..BLOCK_USIZE * 3]
         );
         assert_eq!(tlist, "new 2,0,1\nzero 2,1,2\nnew 2,2,3\n");
     }

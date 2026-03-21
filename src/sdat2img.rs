@@ -173,6 +173,7 @@ mod tests {
     use super::*;
 
     const BLOCK_SIZE: u32 = 4;
+    const BLOCK_USIZE: usize = BLOCK_SIZE as usize;
 
     fn make_tlist(commands: &str) -> tlist::Reader<Cursor<String>> {
         let data = format!("4\n3\n0\n0\n{commands}");
@@ -190,7 +191,7 @@ mod tests {
 
     #[test]
     fn basic() {
-        let data = vec![1u8; BLOCK_SIZE as usize * 3];
+        let data = vec![1u8; BLOCK_USIZE * 3];
         let (max_offset, out) = run("new 4,0,1,1,3", data.clone(), 3);
         assert_eq!(max_offset, 3);
         assert_eq!(out, data);
@@ -198,25 +199,19 @@ mod tests {
 
     #[test]
     fn mixed() {
-        let data = vec![1u8; BLOCK_SIZE as usize * 3];
+        let data = vec![1u8; BLOCK_USIZE * 3];
         let (max_offset, out) = run("new 4,0,1,1,3\nzero 2,3,5", data.clone(), 5);
         assert_eq!(max_offset, 5);
-        assert_eq!(&out[..BLOCK_SIZE as usize * 3], data);
-        assert_eq!(
-            &out[BLOCK_SIZE as usize * 3..],
-            vec![0u8; BLOCK_SIZE as usize * 2]
-        );
+        assert_eq!(&out[..BLOCK_USIZE * 3], data);
+        assert_eq!(&out[BLOCK_USIZE * 3..], vec![0u8; BLOCK_USIZE * 2]);
     }
 
     #[test]
     fn seek() {
-        let data = vec![1u8; BLOCK_SIZE as usize];
+        let data = vec![1u8; BLOCK_USIZE];
         let (_, out) = run("new 2,2,3", data.clone(), 3);
-        assert_eq!(
-            &out[..BLOCK_SIZE as usize * 2],
-            vec![0u8; BLOCK_SIZE as usize * 2]
-        );
-        assert_eq!(&out[BLOCK_SIZE as usize * 2..], data);
+        assert_eq!(&out[..BLOCK_USIZE * 2], vec![0u8; BLOCK_USIZE * 2]);
+        assert_eq!(&out[BLOCK_USIZE * 2..], data);
     }
 
     #[test]
