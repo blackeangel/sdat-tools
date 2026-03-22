@@ -104,13 +104,11 @@ impl Cmd {
             ProcessError::TransferListWrite(_) => unreachable!(),
         })?;
 
-        let (f, ..) = output_writer.into_parts();
+        let f = output_writer.get_ref();
 
         f.set_len(u64::from(max_offset * self.block_size))
             .path_err(&output_path)?;
-        f.sync_all().path_err(&output_path)?;
-
-        Ok(())
+        f.sync_all().path_err(&output_path)
     }
 
     fn file_with_extension(&self, ext: &str) -> Result<PathBuf, Error> {

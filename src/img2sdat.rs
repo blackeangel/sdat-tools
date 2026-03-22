@@ -125,14 +125,12 @@ impl Cmd {
             }
         })?;
 
-        let (f, ..) = dat_writer.into_parts();
-        f.sync_all().path_err(&dat_path)?;
-
-        let (w, ..) = tlist_writer.into_parts();
-        let (f, ..) = w.into_parts();
-        f.sync_all().path_err(&tlist_path)?;
-
-        Ok(())
+        dat_writer.get_ref().sync_all().path_err(&dat_path)?;
+        tlist_writer
+            .inner()
+            .get_ref()
+            .sync_all()
+            .path_err(&tlist_path)
     }
 
     fn output_paths(&self) -> Result<(PathBuf, PathBuf, PathBuf), Error> {
