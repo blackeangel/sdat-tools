@@ -205,9 +205,7 @@ fn img2sdat(
     dat_writer.flush().map_err(ProcessError::Write)?;
     tlist_writer
         .flush()
-        .map_err(ProcessError::TransferListWrite)?;
-
-    Ok(())
+        .map_err(ProcessError::TransferListWrite)
 }
 
 #[cfg(test)]

@@ -193,7 +193,7 @@ impl<W: std::io::Write> Writer<W> {
                         self.total_blocks += end - start;
                     }
                 }
-                writeln!(self.inner)?;
+                writeln!(self.inner).map_err(Into::into)
             }};
         }
 
@@ -202,8 +202,6 @@ impl<W: std::io::Write> Writer<W> {
             Command::Zero(ranges) => write_command!("zero", ranges, true),
             Command::Erase(ranges) => write_command!("erase", ranges, false),
         }
-
-        Ok(())
     }
 
     pub fn flush(&mut self) -> Result<(), WriteError> {
