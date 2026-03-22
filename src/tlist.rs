@@ -160,6 +160,14 @@ impl<R: std::io::BufRead> Reader<R> {
         &self.header
     }
 
+    pub fn inner(&self) -> &R {
+        &self.inner
+    }
+
+    pub fn inner_mut(&mut self) -> &mut R {
+        &mut self.inner
+    }
+
     pub fn into_parts(self) -> (R, Header) {
         (self.inner, self.header)
     }
@@ -200,6 +208,14 @@ impl<W: std::io::Write> Writer<W> {
 
     pub fn flush(&mut self) -> Result<(), WriteError> {
         self.inner.flush().map_err(Into::into)
+    }
+
+    pub fn inner(&self) -> &W {
+        &self.inner
+    }
+
+    pub fn inner_mut(&mut self) -> &mut W {
+        &mut self.inner
     }
 
     pub fn into_parts(self) -> (W, u32) {
