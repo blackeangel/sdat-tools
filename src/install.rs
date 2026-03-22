@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 
 use clap::Args;
 
-use crate::error::Error;
+use crate::error::{Error, ErrorExt};
 
 /// Install hardlinks to bundled commands
 #[derive(Args, Debug)]
@@ -34,7 +34,7 @@ impl Cmd {
                     Err(e) => return Err(Error::Io(target, e)),
                 }
             }
-            hard_link(&prog, &target).map_err(|e| Error::Io(target.clone(), e))?;
+            hard_link(&prog, &target).path_err(&target)?;
             eprintln!("created: {}", target.display());
         }
 

@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use brotlic::DecompressorReader;
 use clap::Args;
 
-use crate::error::{Error, ProcessError, check_file_alignment, file_prefix};
+use crate::error::{Error, ErrorExt, ProcessError, check_file_alignment, file_prefix};
 use crate::tlist::{self, Reader as ListReader};
 use crate::ui::progress_bar;
 
@@ -39,10 +39,7 @@ impl Cmd {
         let use_brotli = self.brotli || self.file.extension().is_some_and(|e| e == "br");
 
         let input_len = if use_brotli {
-            self.file
-                .metadata()
-                .map_err(|e| Error::Io(self.file.clone(), e))?
-                .len()
+            self.file.metadata().path_err(&self.file)?.len()
         } else {
             check_file_alignment(&self.file, self.block_size)?
         };
@@ -57,13 +54,13 @@ impl Cmd {
         };
 
         let mut tlist_reader = {
-            let f = File::open(&tlist_path).map_err(|e| Error::Io(tlist_path.clone(), e))?;
+            let f = File::open(&tlist_path).path_err(&tlist_path)?;
             let reader = BufReader::new(f);
-            ListReader::new(reader).map_err(|e| Error::TransferList(tlist_path.clone(), e))
+            ListReader::new(reader).path_err(&tlist_path)
         }?;
 
         let input_reader = {
-            let f = File::open(&self.file).map_err(|e| Error::Io(self.file.clone(), e))?;
+            let f = File::open(&self.file).path_err(&self.file)?;
             BufReader::with_capacity(self.buffer_size * 1024, f)
         };
 
@@ -73,7 +70,7 @@ impl Cmd {
             } else {
                 File::create_new
             };
-            let f = func(&output_path).map_err(|e| Error::Io(output_path.clone(), e))?;
+            let f = func(&output_path).path_err(&output_path)?;
             BufWriter::with_capacity(self.buffer_size * 1024, f)
         };
 
@@ -110,8 +107,8 @@ impl Cmd {
         let (f, ..) = output_writer.into_parts();
 
         f.set_len(u64::from(max_offset * self.block_size))
-            .map_err(|e| Error::Io(output_path.clone(), e))?;
-        f.sync_all().map_err(|e| Error::Io(output_path, e))?;
+            .path_err(&output_path)?;
+        f.sync_all().path_err(&output_path)?;
 
         Ok(())
     }

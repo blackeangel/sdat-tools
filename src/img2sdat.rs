@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use brotlic::{BrotliEncoderOptions, CompressorWriter, Quality};
 use clap::Args;
 
-use crate::error::{Error, ProcessError, check_file_alignment, file_prefix};
+use crate::error::{Error, ErrorExt, ProcessError, check_file_alignment, file_prefix};
 use crate::tlist::{self, Writer as ListWriter};
 use crate::ui::progress_bar;
 
@@ -53,7 +53,7 @@ impl Cmd {
         let (dat_path, tlist_path, patch_path) = self.output_paths()?;
 
         let input_reader = {
-            let f = File::open(&self.file).map_err(|e| Error::Io(self.file.clone(), e))?;
+            let f = File::open(&self.file).path_err(&self.file)?;
             BufReader::with_capacity(self.buffer_size * 1024, f)
         };
 
@@ -63,15 +63,15 @@ impl Cmd {
             File::create_new
         };
 
-        create_func(&patch_path).map_err(|e| Error::Io(patch_path.clone(), e))?;
+        create_func(&patch_path).path_err(&patch_path)?;
 
         let mut dat_writer = {
-            let f = create_func(&dat_path).map_err(|e| Error::Io(dat_path.clone(), e))?;
+            let f = create_func(&dat_path).path_err(&dat_path)?;
             BufWriter::with_capacity(self.buffer_size * 1024, f)
         };
 
         let mut tlist_writer = {
-            let f = create_func(&tlist_path).map_err(|e| Error::Io(tlist_path.clone(), e))?;
+            let f = create_func(&tlist_path).path_err(&tlist_path)?;
             let mut w = BufWriter::new(f);
 
             let total_blocks = u32::try_from(input_len / u64::from(self.block_size))
@@ -83,7 +83,7 @@ impl Cmd {
                 stash_entries: 0,
                 max_stash_blocks: 0,
             };
-            write!(w, "{header}").map_err(|e| Error::Io(tlist_path.clone(), e))?;
+            write!(w, "{header}").path_err(&tlist_path)?;
 
             ListWriter::new(w)
         };
@@ -126,11 +126,11 @@ impl Cmd {
         })?;
 
         let (f, ..) = dat_writer.into_parts();
-        f.sync_all().map_err(|e| Error::Io(dat_path, e))?;
+        f.sync_all().path_err(&dat_path)?;
 
         let (w, ..) = tlist_writer.into_parts();
         let (f, ..) = w.into_parts();
-        f.sync_all().map_err(|e| Error::Io(tlist_path, e))?;
+        f.sync_all().path_err(&tlist_path)?;
 
         Ok(())
     }
