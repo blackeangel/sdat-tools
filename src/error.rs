@@ -9,11 +9,11 @@ use crate::tlist;
 #[derive(Debug, Error)]
 pub enum Error {
     #[error("{0}: io error: {1}")]
-    Io(PathBuf, #[source] io::Error),
+    Io(PathBuf, io::Error),
     #[error("{0}: file data is not aligned to block size ({1} bytes)")]
     Alignment(PathBuf, u32),
     #[error("{0}:{1}")]
-    TransferList(PathBuf, #[source] tlist::ReadError),
+    TransferList(PathBuf, tlist::ReadError),
     #[error("could not determine executable path")]
     Executable,
 }
