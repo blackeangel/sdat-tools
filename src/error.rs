@@ -8,7 +8,7 @@ use crate::tlist;
 
 #[derive(Debug, Error)]
 pub enum Error {
-    #[error("{0}: io error: {1}")]
+    #[error("{0}: {1}")]
     Io(PathBuf, io::Error),
     #[error("{0}: file already exists, use -f/--force to overwrite")]
     AlreadyExists(PathBuf),
