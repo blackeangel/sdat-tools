@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{BufRead, BufReader, BufWriter, Read, Seek, SeekFrom, Write};
+use std::io::{self, BufRead, BufReader, BufWriter, Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
 
 use brotlic::DecompressorReader;
@@ -54,7 +54,10 @@ impl Cmd {
         };
 
         let mut tlist_reader = {
-            let f = File::open(&tlist_path).path_err(&tlist_path)?;
+            let f = File::open(&tlist_path).map_err(|e| match e.kind() {
+                io::ErrorKind::NotFound => Error::TransferListNotFound(tlist_path.clone()),
+                _ => Error::Io(tlist_path.clone(), e),
+            })?;
             let reader = BufReader::new(f);
             ListReader::new(reader).path_err(&tlist_path)
         }?;
@@ -97,7 +100,10 @@ impl Cmd {
         progress_bar.finish_and_clear();
 
         let max_offset = result.map_err(|e| match e {
-            ProcessError::Read(e) => Error::Io(self.file.clone(), e),
+            ProcessError::Read(e) => match e.kind() {
+                io::ErrorKind::UnexpectedEof => Error::UnexpectedEof(self.file.clone()),
+                _ => Error::Io(self.file.clone(), e),
+            },
             ProcessError::Write(e) => Error::Io(output_path.clone(), e),
             ProcessError::TransferListRead(tlist::ReadError::Io(e)) => Error::Io(tlist_path, e),
             ProcessError::TransferListRead(e) => Error::TransferList(tlist_path, e),

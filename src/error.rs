@@ -10,6 +10,12 @@ use crate::tlist;
 pub enum Error {
     #[error("{0}: io error: {1}")]
     Io(PathBuf, io::Error),
+    #[error("{0}: file already exists, use -f/--force to overwrite")]
+    AlreadyExists(PathBuf),
+    #[error("{0}: unexpected EOF: file is truncated or transfer list is incorrect")]
+    UnexpectedEof(PathBuf),
+    #[error("{0}: transfer list not found, use -t/--transfer-list to specify path")]
+    TransferListNotFound(PathBuf),
     #[error("{0}: file data is not aligned to block size ({1} bytes)")]
     Alignment(PathBuf, u32),
     #[error("{0}:{1}")]
@@ -36,7 +42,10 @@ pub trait ErrorExt<T> {
 
 impl<T> ErrorExt<T> for io::Result<T> {
     fn path_err(self, path: &Path) -> Result<T, Error> {
-        self.map_err(|e| Error::Io(path.to_owned(), e))
+        self.map_err(|e| match e.kind() {
+            io::ErrorKind::AlreadyExists => Error::AlreadyExists(path.to_owned()),
+            _ => Error::Io(path.to_owned(), e),
+        })
     }
 }
 
