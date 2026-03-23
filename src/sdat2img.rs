@@ -99,16 +99,28 @@ impl Cmd {
 
         progress_bar.finish_and_clear();
 
-        let max_offset = result.map_err(|e| match e {
+        let (max_offset, total_blocks) = result.map_err(|e| match e {
             ProcessError::Read(e) => match e.kind() {
                 io::ErrorKind::UnexpectedEof => Error::UnexpectedEof(self.file.clone()),
                 _ => Error::Io(self.file.clone(), e),
             },
             ProcessError::Write(e) => Error::Io(output_path.clone(), e),
-            ProcessError::TransferListRead(tlist::ReadError::Io(e)) => Error::Io(tlist_path, e),
-            ProcessError::TransferListRead(e) => Error::TransferList(tlist_path, e),
+            ProcessError::TransferListRead(tlist::ReadError::Io(e)) => {
+                Error::Io(tlist_path.clone(), e)
+            }
+            ProcessError::TransferListRead(e) => Error::TransferList(tlist_path.clone(), e),
             ProcessError::TransferListWrite(_) => unreachable!(),
         })?;
+
+        let header = tlist_reader.header();
+
+        if total_blocks != header.total_blocks {
+            return Err(Error::TotalBlocksMismatch(
+                tlist_path.clone(),
+                header.total_blocks,
+                total_blocks,
+            ));
+        }
 
         let f = output_writer.get_ref();
 
@@ -134,12 +146,11 @@ fn sdat2img(
     tlist_reader: &mut ListReader<impl BufRead>,
     output_writer: &mut (impl Write + Seek),
     block_size: u32,
-) -> Result<u32, ProcessError> {
+) -> Result<(u32, u32), ProcessError> {
     let mut command_buf = vec![];
     let mut data_buf = vec![0u8; block_size as usize];
 
-    let mut max_offset = 0;
-    let mut pos = 0;
+    let (mut max_offset, mut pos, mut total_blocks) = (0, 0, 0);
 
     while let Some(command) = tlist_reader.next_command(&mut command_buf) {
         let command = command.map_err(ProcessError::TransferListRead)?;
@@ -154,7 +165,9 @@ fn sdat2img(
                             .map_err(ProcessError::Write)?;
                     }
 
-                    for _ in 0..(end - start) {
+                    let blocks = end - start;
+
+                    for _ in 0..blocks {
                         input_reader
                             .read_exact(&mut data_buf)
                             .map_err(ProcessError::Read)?;
@@ -164,9 +177,14 @@ fn sdat2img(
                         pos += 1;
                     }
                     max_offset = max_offset.max(*end);
+                    total_blocks += blocks;
                 }
             }
-            tlist::Command::Zero(ranges) | tlist::Command::Erase(ranges) => ranges
+            tlist::Command::Zero(ranges) => ranges.iter().for_each(|(start, end)| {
+                total_blocks += end - start;
+                max_offset = max_offset.max(*end);
+            }),
+            tlist::Command::Erase(ranges) => ranges
                 .iter()
                 .for_each(|(_, end)| max_offset = max_offset.max(*end)),
         }
@@ -175,7 +193,7 @@ fn sdat2img(
 
     output_writer.flush().map_err(ProcessError::Write)?;
 
-    Ok(max_offset)
+    Ok((max_offset, total_blocks))
 }
 
 #[cfg(test)]
@@ -192,28 +210,31 @@ mod tests {
         tlist::Reader::new(Cursor::new(data)).expect("failed to create tlist reader")
     }
 
-    fn run(tlist_data: &str, input: Vec<u8>, output_blocks: u32) -> (u32, Vec<u8>) {
+    fn run(tlist_data: &str, input: Vec<u8>, output_blocks: u32) -> (u32, u32, Vec<u8>) {
         let mut tlist_reader = make_tlist(tlist_data);
         let mut input = Cursor::new(input);
         let mut output = Cursor::new(vec![0u8; (output_blocks * BLOCK_SIZE) as usize]);
-        let max_offset = sdat2img(&mut input, &mut tlist_reader, &mut output, BLOCK_SIZE)
-            .expect("sdat2img failed");
-        (max_offset, output.into_inner())
+        let (max_offset, total_blocks) =
+            sdat2img(&mut input, &mut tlist_reader, &mut output, BLOCK_SIZE)
+                .expect("sdat2img failed");
+        (max_offset, total_blocks, output.into_inner())
     }
 
     #[test]
     fn basic() {
         let data = vec![1u8; BLOCK_USIZE * 3];
-        let (max_offset, out) = run("new 4,0,1,1,3", data.clone(), 3);
+        let (max_offset, total_blocks, out) = run("new 4,0,1,1,3", data.clone(), 3);
         assert_eq!(max_offset, 3);
+        assert_eq!(total_blocks, 3);
         assert_eq!(out, data);
     }
 
     #[test]
     fn mixed() {
         let data = vec![1u8; BLOCK_USIZE * 3];
-        let (max_offset, out) = run("new 4,0,1,1,3\nzero 2,3,5", data.clone(), 5);
+        let (max_offset, total_blocks, out) = run("new 4,0,1,1,3\nzero 2,3,5", data.clone(), 5);
         assert_eq!(max_offset, 5);
+        assert_eq!(total_blocks, 5);
         assert_eq!(&out[..BLOCK_USIZE * 3], data);
         assert_eq!(&out[BLOCK_USIZE * 3..], vec![0u8; BLOCK_USIZE * 2]);
     }
@@ -221,14 +242,15 @@ mod tests {
     #[test]
     fn seek() {
         let data = vec![1u8; BLOCK_USIZE];
-        let (_, out) = run("new 2,2,3", data.clone(), 3);
+        let (.., out) = run("new 2,2,3", data.clone(), 3);
         assert_eq!(&out[..BLOCK_USIZE * 2], vec![0u8; BLOCK_USIZE * 2]);
         assert_eq!(&out[BLOCK_USIZE * 2..], data);
     }
 
     #[test]
     fn zero_erase_no_data() {
-        let (max_offset, _) = run("zero 2,0,2\nerase 2,2,3", vec![], 3);
+        let (max_offset, total_blocks, _) = run("zero 2,0,2\nerase 2,2,3", vec![], 3);
         assert_eq!(max_offset, 3);
+        assert_eq!(total_blocks, 2);
     }
 }
