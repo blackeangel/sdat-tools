@@ -16,7 +16,7 @@ pub enum Error {
     UnexpectedEof(PathBuf),
     #[error("{0}: transfer list not found, use -t/--transfer-list to specify path")]
     TransferListNotFound(PathBuf),
-    #[error("{0}: file data is not aligned to block size ({1} bytes)")]
+    #[error("{0}: file is not aligned to block size ({1} bytes)")]
     Alignment(PathBuf, u32),
     #[error("{0}: transfer list claims {1} blocks but {2} were written")]
     TotalBlocksMismatch(PathBuf, u32, u32),
