@@ -79,8 +79,7 @@ impl<R: std::io::BufRead> Reader<R> {
 
         macro_rules! read_header_field {
             () => {{
-                let n = reader.read_line(&mut line_buf)?;
-                if n == 0 {
+                if reader.read_line(&mut line_buf)? == 0 {
                     return Err(ReadError::UnexpectedEof(line_num));
                 }
                 line_num += 1;
