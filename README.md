@@ -9,19 +9,19 @@ Android block-based OTA tools for converting between raw images and `.new.dat`/`
 ```
 Convert .new.dat or .new.dat.br file to a raw image
 
-Usage: sdat-tools sdat2img [OPTIONS] <FILE> [TRANSFER_LIST] [OUTPUT]
+Usage: sdat-tools sdat2img [OPTIONS] <FILE>
 
 Arguments:
-  <FILE>           Input .new.dat(.br) file
-  [TRANSFER_LIST]  Transfer list file [default: <FILE stem>.transfer.list]
-  [OUTPUT]         Output raw image file [default: <FILE stem>.img]
+  <FILE>  Input .new.dat(.br) file
 
 Options:
-      --buffer-size <N>  Read/write buffer size in KiB [default: 256]
-      --block-size <N>   Block size in bytes [default: 4096]
-  -f, --force            Force overwrite output file
-  -b, --brotli           Enable brotli decompression [default: auto-detect from FILE extension]
-  -h, --help             Print help
+  -t, --transfer-list <PATH>  Transfer list file [default: <FILE stem>.transfer.list]
+  -o, --output <PATH>         Output raw image file [default: <FILE stem>.img]
+  -b, --brotli                Enable brotli decompression [default: auto-detect from FILE extension]
+  -f, --force                 Force overwrite output file
+      --block-size <N>        Block size in bytes [default: 4096]
+      --buffer-size <N>       Read/write buffer size in KiB [default: 256]
+  -h, --help                  Print help
 ```
 
 ### `img2sdat`
@@ -29,19 +29,19 @@ Options:
 ```
 Convert raw image file to .new.dat or .new.dat.br
 
-Usage: sdat-tools img2sdat [OPTIONS] <FILE> [OUTPUT]
+Usage: sdat-tools img2sdat [OPTIONS] <FILE>
 
 Arguments:
-  <FILE>    Input raw image file
-  [OUTPUT]  Directory for output files [default: <FILE directory>]
+  <FILE>  Input raw image file
 
 Options:
-      --buffer-size <N>    Read/write buffer size in KiB [default: 256]
-      --block-size <N>     Block size in bytes [default: 4096]
-  -f, --force              Force overwrite output files
-  -b, --brotli [<LEVEL>]   Enable brotli compression at specified level [default: 5]
-  -v, --version <VERSION>  Transfer list format version [default: 4]
-  -h, --help               Print help
+  -o, --output <PATH>     Directory for output files [default: <FILE directory>]
+  -b, --brotli [<LEVEL>]  Enable brotli compression at specified level [default: 5]
+  -f, --force             Force overwrite output files
+      --format <FMT>      Transfer list format version [default: 4]
+      --block-size <N>    Block size in bytes [default: 4096]
+      --buffer-size <N>   Read/write buffer size in KiB [default: 256]
+  -h, --help              Print help
 ```
 
 ### `install`
