@@ -8,22 +8,22 @@ use crate::tlist;
 
 #[derive(Debug, Error)]
 pub enum Error {
-    #[error("{0}: {1}")]
-    Io(PathBuf, io::Error),
-    #[error("{0}: file already exists, use -f/--force to overwrite")]
-    AlreadyExists(PathBuf),
-    #[error("{0}: unexpected EOF: file is truncated or transfer list is incorrect")]
-    UnexpectedEof(PathBuf),
-    #[error("{0}: transfer list not found, use -t/--transfer-list to specify path")]
-    TransferListNotFound(PathBuf),
     #[error("{0}: file is not aligned to block size ({1} bytes)")]
     Alignment(PathBuf, u32),
+    #[error("{0}: file already exists, use -f/--force to overwrite")]
+    AlreadyExists(PathBuf),
+    #[error("could not determine executable path")]
+    Executable,
+    #[error("{0}: {1}")]
+    Io(PathBuf, io::Error),
     #[error("{0}: transfer list claims {1} blocks but {2} were written")]
     TotalBlocksMismatch(PathBuf, u32, u32),
     #[error("{0}:{1}")]
     TransferList(PathBuf, tlist::ReadError),
-    #[error("could not determine executable path")]
-    Executable,
+    #[error("{0}: transfer list not found, use -t/--transfer-list to specify path")]
+    TransferListNotFound(PathBuf),
+    #[error("{0}: unexpected EOF: file is truncated or transfer list is incorrect")]
+    UnexpectedEof(PathBuf),
 }
 
 #[derive(Debug, Error)]
@@ -31,11 +31,11 @@ pub enum ProcessError {
     #[error(transparent)]
     Read(io::Error),
     #[error(transparent)]
-    Write(io::Error),
-    #[error(transparent)]
     TransferListRead(#[from] tlist::ReadError),
     #[error(transparent)]
     TransferListWrite(#[from] tlist::WriteError),
+    #[error(transparent)]
+    Write(io::Error),
 }
 
 pub trait ErrorExt<T> {

@@ -2,38 +2,38 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum ReadError {
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
     #[error("{0}: failed to parse header field ({1})")]
     Parse(usize, #[source] std::num::ParseIntError),
-    #[error("{0}: unsupported version ({1})")]
-    UnsupportedVersion(usize, u8),
     #[error("{0}: {1}")]
     Range(usize, #[source] RangeError),
     #[error("{0}: expected header field, but got EOF")]
     UnexpectedEof(usize),
     #[error("{0}: unsupported command ({1})")]
     UnsupportedCommand(usize, String),
-    #[error(transparent)]
-    Io(#[from] std::io::Error),
+    #[error("{0}: unsupported version ({1})")]
+    UnsupportedVersion(usize, u8),
 }
 
 #[derive(Debug, Error)]
 pub enum WriteError {
     #[error(transparent)]
-    Range(#[from] RangeError),
-    #[error(transparent)]
     Io(#[from] std::io::Error),
+    #[error(transparent)]
+    Range(#[from] RangeError),
 }
 
 #[derive(Debug, Error)]
 pub enum RangeError {
-    #[error("odd length value ({0})")]
-    OddLength(u32),
-    #[error("missing value in range set")]
-    MissingValue,
-    #[error("failed to parse value in range set ({0}: {1})")]
-    Parse(String, #[source] std::num::ParseIntError),
     #[error("invalid range ({0},{1})")]
     InvalidRange(u32, u32),
+    #[error("missing value in range set")]
+    MissingValue,
+    #[error("odd length value ({0})")]
+    OddLength(u32),
+    #[error("failed to parse value in range set ({0}: {1})")]
+    Parse(String, #[source] std::num::ParseIntError),
 }
 
 #[derive(Debug, PartialEq)]
